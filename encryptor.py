@@ -13,6 +13,8 @@ def code(arguments):
         with open(arguments.input_file, 'r') as file:
             data = file.read()
 
+    arguments.cipher = Cipher(arguments.cipher)
+
     coder = Coder(arguments.cipher)
     if arguments.cipher == Cipher.caesar:
         arguments.key = int(arguments.key)
@@ -30,13 +32,13 @@ def code(arguments):
 
 
 def calculate_letter_frequencies(text):
-    text = ''.join([char for char in text.lower() if char.isalpha()])
+    letters = ''.join(set(text))
     frequencies = defaultdict(float)
 
     for letter in text:
         frequencies[letter] += 1
 
-    for letter in string.ascii_lowercase:
+    for letter in letters:
         frequencies[letter] /= len(text)
 
     return frequencies
@@ -55,7 +57,7 @@ def train(arguments):
 
 def hack(arguments):
     with open(f'{arguments.model_file}.json', 'r') as model:
-        frequencies = json.load(model)
+        frequencies = defaultdict(float, json.load(model))
 
     if arguments.input_file is None:
         data = input()
@@ -70,12 +72,12 @@ def hack(arguments):
 
     def calculate_error(data_frequencies):
         error = 0
-        for letter in string.ascii_lowercase:
+        for letter in Coder.characters:
             error += abs(frequencies[letter] - data_frequencies[letter]) ** 1.6
 
         return error
 
-    for key in range(26):
+    for key in range(len(Coder.characters)):
         decoded_data = coder.decode(data, key)
 
         data_frequencies = calculate_letter_frequencies(decoded_data)
