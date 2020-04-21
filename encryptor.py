@@ -1,34 +1,43 @@
 #!/usr/bin/python3
 import argparse
-from coder import *
 import string
-from collections import defaultdict
 import json
+from collections import defaultdict
+from coder import Cipher, Coder
+
+
+def read_input_data(input_file):
+    if input_file is None:
+        data = input()
+    else:
+        with open(input_file, 'r') as file:
+            data = file.read()
+
+    return data
+
+
+def write_output_data(output_file, data):
+    if output_file is None:
+        print(data)
+    else:
+        with open(output_file, 'w') as file:
+            file.write(data)
 
 
 def code(arguments):
-    if arguments.input_file is None:
-        data = input()
-    else:
-        with open(arguments.input_file, 'r') as file:
-            data = file.read()
-
+    data = read_input_data(arguments.input_file)
     arguments.cipher = Cipher(arguments.cipher)
-
-    coder = Coder(arguments.cipher)
     if arguments.cipher == Cipher.caesar:
         arguments.key = int(arguments.key)
+
+    coder = Coder(arguments.cipher)
 
     if arguments.mode == 'encode':
         result = coder.encode(data, arguments.key)
     elif arguments.mode == 'decode':
         result = coder.decode(data, arguments.key)
 
-    if arguments.output_file is None:
-        print(result)
-    else:
-        with open(arguments.output_file, 'w') as file:
-            file.write(result)
+    write_output_data(arguments.output_file, result)
 
 
 def calculate_letter_frequencies(text):
@@ -45,25 +54,15 @@ def calculate_letter_frequencies(text):
 
 
 def train(arguments):
-    if arguments.text_file is None:
-        text = input()
-    else:
-        with open(arguments.text_file, 'r') as file:
-            text = file.read()
-
     with open(f'{arguments.model_file}.json', 'w') as model:
+        text = read_input_data(arguments.text_file)
         json.dump(calculate_letter_frequencies(text), model)
 
 
 def hack(arguments):
+    data = read_input_data(arguments.input_file)
     with open(f'{arguments.model_file}.json', 'r') as model:
         frequencies = defaultdict(float, json.load(model))
-
-    if arguments.input_file is None:
-        data = input()
-    else:
-        with open(arguments.input_file, 'r') as file:
-            data = file.read()
 
     result = ''
     min_error = 1
@@ -72,12 +71,12 @@ def hack(arguments):
 
     def calculate_error(data_frequencies):
         error = 0
-        for letter in Coder.characters:
+        for letter in Coder.get_characters():
             error += abs(frequencies[letter] - data_frequencies[letter]) ** 1.6
 
         return error
 
-    for key in range(len(Coder.characters)):
+    for key in range(len(Coder.get_characters())):
         decoded_data = coder.decode(data, key)
 
         data_frequencies = calculate_letter_frequencies(decoded_data)
@@ -87,11 +86,7 @@ def hack(arguments):
             result = decoded_data
             min_error = data_error
 
-    if arguments.output_file is None:
-        print(result)
-    else:
-        with open(arguments.output_file, 'w') as file:
-            file.write(result)
+    write_output_data(arguments.output_file, result)
 
 
 def main():

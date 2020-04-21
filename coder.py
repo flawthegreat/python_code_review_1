@@ -1,4 +1,5 @@
 import string
+from collections import defaultdict
 from enum import Enum
 
 
@@ -8,55 +9,46 @@ class Cipher(Enum):
 
 
 class Coder:
-    characters = (
+    __characters = (
         'абвгдеёжзийклмнопрстуфхцчшщъыьэюяАБВГДЕЁЖЗИЙКЛМНОПРСТУФХЦЧШЩЪЫЬЭЮЯ' +
         string.ascii_letters +
         string.digits +
         string.punctuation +
         ' \n'
     )
+    __character_indices = {char: i for i, char in enumerate(__characters)}
 
     def __init__(self, cipher):
         if cipher == Cipher.caesar:
-            self.encode = self.encode_caesar
-            self.decode = self.decode_caesar
+            self.encode = self.__encode_caesar
+            self.decode = self.__decode_caesar
         elif cipher == Cipher.vigenere:
-            self.encode = self.encode_vigenere
-            self.decode = self.decode_vigenere
+            self.encode = self.__encode_vigenere
+            self.decode = self.__decode_vigenere
         else:
-            raise ValueError(f'Unknown cipher: {cipher}')
+            raise ValueError(f'Unsupported cipher: {cipher}')
 
-    def encode_caesar(self, data, key):
-        Coder.check_data(data)
+    def __encode_caesar(self, data, key):
+        return ''.join([type(self).__shift_char(char, key) for char in data])
 
-        return ''.join([Coder.shift_char(char, key) for char in data])
+    def __decode_caesar(self, data, key):
+        return self.__encode_caesar(data, -key)
 
-    def decode_caesar(self, data, key):
-        return self.encode_caesar(data, -key)
+    def __encode_vigenere(self, data, key, sign=1):
+        return ''.join([type(self).__shift_char(
+            char,
+            sign * type(self).__character_indices[key[i % len(key)]]
+        ) for i, char in enumerate(data)])
 
-    def encode_vigenere(self, data, key, sign=1):
-        Coder.check_data(data)
-        Coder.check_data(key)
+    def __decode_vigenere(self, data, key):
+        return self.__encode_vigenere(data, key, sign=-1)
 
-        return ''.join([
-            Coder.shift_char(
-                char,
-                sign * Coder.characters.find(key[i % len(key)])
-            )
-            for i, char in enumerate(data)
-        ])
+    @classmethod
+    def get_characters(cls):
+        return cls.__characters
 
-    def decode_vigenere(self, data, key):
-        return self.encode_vigenere(data, key, sign=-1)
-
-    @staticmethod
-    def check_data(data):
-        for char in data:
-            if char not in Coder.characters:
-                raise ValueError(f'Unsupported character "{char}" in "{data}"')
-
-    @staticmethod
-    def shift_char(char, delta):
-        return Coder.characters[
-            (Coder.characters.find(char) + delta) % len(Coder.characters)
+    @classmethod
+    def __shift_char(cls, char, delta):
+        return cls.__characters[
+            (cls.__character_indices[char] + delta) % len(cls.__characters)
         ]
