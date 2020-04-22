@@ -177,5 +177,5 @@ def main():
     arguments.func(arguments)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
