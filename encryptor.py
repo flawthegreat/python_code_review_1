@@ -27,14 +27,15 @@ def write_output_data(output_file, data):
 def code(arguments):
     data = read_input_data(arguments.input_file)
     arguments.cipher = Cipher(arguments.cipher)
+    arguments.mode = Coder.Mode(arguments.mode)
     if arguments.cipher == Cipher.caesar:
         arguments.key = int(arguments.key)
 
     coder = Coder(arguments.cipher)
 
-    if arguments.mode == 'encode':
+    if arguments.mode == Coder.Mode.encode:
         result = coder.encode(data, arguments.key)
-    elif arguments.mode == 'decode':
+    elif arguments.mode == Coder.Mode.decode:
         result = coder.decode(data, arguments.key)
 
     write_output_data(arguments.output_file, result)
@@ -43,12 +44,13 @@ def code(arguments):
 def calculate_letter_frequencies(text):
     letters = ''.join(set(text))
     frequencies = defaultdict(float)
+    text_length = len(text)
 
     for letter in text:
         frequencies[letter] += 1
 
     for letter in letters:
-        frequencies[letter] /= len(text)
+        frequencies[letter] /= text_length
 
     return frequencies
 
@@ -69,14 +71,15 @@ def hack(arguments):
 
     coder = Coder(Cipher.caesar)
 
-    def calculate_error(data_frequencies):
+    def calculate_error(data_frequencies, difference_power=1.6):
         error = 0
         for letter in Coder.get_characters():
-            error += abs(frequencies[letter] - data_frequencies[letter]) ** 1.6
+            error += abs(frequencies[letter] - data_frequencies[letter]) ** \
+                difference_power
 
         return error
 
-    for key in range(len(Coder.get_characters())):
+    for key in range(Coder.get_character_count()):
         decoded_data = coder.decode(data, key)
 
         data_frequencies = calculate_letter_frequencies(decoded_data)
