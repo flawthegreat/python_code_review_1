@@ -31,13 +31,13 @@ class Coder:
             raise NotImplementedError(f'Unsupported cipher: {cipher}')
 
     def __encode_caesar(self, data, key):
-        return ''.join(type(self).__shift_char(char, key) for char in data)
+        return ''.join(type(self).shift_char(char, key) for char in data)
 
     def __decode_caesar(self, data, key):
         return self.__encode_caesar(data, -key)
 
     def __encode_vigenere(self, data, key, sign=1):
-        return ''.join(type(self).__shift_char(
+        return ''.join(type(self).shift_char(
             char,
             sign * type(self).__character_indices[key[i % len(key)]]
         ) for i, char in enumerate(data))
@@ -54,7 +54,7 @@ class Coder:
         return cls.__character_count
 
     @classmethod
-    def __shift_char(cls, char, delta):
+    def shift_char(cls, char, delta):
         return cls.__characters[
             (cls.__character_indices[char] + delta) % cls.__character_count
         ]
