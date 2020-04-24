@@ -56,5 +56,5 @@ class Coder:
     @classmethod
     def __shift_char(cls, char, delta):
         return cls.__characters[
-            (cls.__character_indices[char] + delta) % len(cls.__characters)
+            (cls.__character_indices[char] + delta) % cls.__character_count
         ]

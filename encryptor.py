@@ -2,13 +2,14 @@
 import argparse
 import string
 import json
+import sys
 from collections import defaultdict
 from coder import Cipher, Coder
 
 
 def read_input_data(input_file):
     if input_file is None:
-        data = input()
+        data = ''.join(sys.stdin.readlines())
     else:
         with open(input_file, 'r') as file:
             data = file.read()
@@ -67,7 +68,7 @@ def hack(arguments):
         frequencies = defaultdict(float, json.load(model))
 
     result = ''
-    min_error = 1
+    min_error = None
 
     coder = Coder(Cipher.caesar)
 
@@ -85,7 +86,7 @@ def hack(arguments):
         data_frequencies = calculate_letter_frequencies(decoded_data)
         data_error = calculate_error(data_frequencies)
 
-        if data_error < min_error:
+        if min_error is None or data_error < min_error:
             result = decoded_data
             min_error = data_error
 
