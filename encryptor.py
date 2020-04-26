@@ -67,33 +67,24 @@ def hack(arguments):
     with open(f'{arguments.model_file}.json', 'r') as model:
         frequencies = defaultdict(float, json.load(model))
 
-    result = ''
-    min_error = None
-
     coder = Coder(Cipher.caesar)
 
-    def calculate_error(data_frequencies, difference_power=1.6):
+    min_error = None
+    data_frequencies = calculate_letter_frequencies(data)
+
+    def calculate_error(offset, difference_power=1.6):
         error = 0
-        for letter in Coder.get_characters():
-            error += abs(frequencies[letter] - data_frequencies[letter]) ** \
-                difference_power
+        for char in Coder.get_characters():
+            error += abs(
+                frequencies[char] -
+                data_frequencies[Coder.shift_char(char, offset)]
+            ) ** difference_power
 
         return error
 
-    data_frequencies = None
-
-    for key in range(Coder.get_character_count()):
-        decoded_data = coder.decode(data, key)
-
-        if data_frequencies is None:
-            data_frequencies = calculate_letter_frequencies(decoded_data)
-        else:
-            data_frequencies = defaultdict(float, {
-                key: data_frequencies[Coder.shift_char(key, 1)]
-                for key in data_frequencies
-            })
-
-        data_error = calculate_error(data_frequencies)
+    for offset in range(Coder.get_character_count()):
+        decoded_data = coder.decode(data, offset)
+        data_error = calculate_error(offset)
 
         if min_error is None or data_error < min_error:
             result = decoded_data
