@@ -6,6 +6,7 @@ from enum import Enum
 class Cipher(Enum):
     caesar = 'caesar'
     vigenere = 'vigenere'
+    otp = 'otp'
 
 
 class Coder:
@@ -27,6 +28,9 @@ class Coder:
         elif cipher == Cipher.vigenere:
             self.encode = self.__encode_vigenere
             self.decode = self.__decode_vigenere
+        elif cipher == Cipher.otp:
+            self.encode = self.__encode_otp
+            self.decode = self.__decode_otp
         else:
             raise NotImplementedError(f'Unsupported cipher: {cipher}')
 
@@ -44,6 +48,17 @@ class Coder:
 
     def __decode_vigenere(self, data, key):
         return self.__encode_vigenere(data, key, sign=-1)
+
+    def __encode_otp(self, data, key):
+        assert len(key) == len(data)
+
+        return b''.join(
+            (a ^ b).to_bytes(1, byteorder='big')
+            for a, b in zip(data.encode('utf-8'), key.encode('utf-8'))
+        ).decode('utf-8')
+
+    def __decode_otp(self, data, key):
+        return self.__encode_otp(data, key)
 
     @classmethod
     def get_characters(cls):
