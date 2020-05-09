@@ -120,7 +120,7 @@ def hack_vigenere_with_key_length(data, key_length):
     return ''.join(data)
 
 
-def hack_vigenere(data, frequencies):
+def hack_vigenere(data, frequencies, max_ic_difference=0.05):
     def ic(frequencies):
         return sum(f ** 2 for f in frequencies.values())
 
@@ -141,8 +141,11 @@ def hack_vigenere(data, frequencies):
             max_ic = average_ic
             key_info.append([key_length, average_ic])
 
-    key_lengths = [l for l, ic in key_info if abs(ic - main_ic) < 0.05]
-    if len(key_lengths) == 0:
+    key_lengths = [
+        l for l, ic in key_info
+        if abs(ic - main_ic) < max_ic_difference
+    ]
+    if not key_lengths:
         raise RuntimeError('Cannot hack cipher')
 
     min_ic_offset = None
